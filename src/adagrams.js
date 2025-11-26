@@ -17,47 +17,29 @@ const SCORE_DICT = {
   U: 1, V: 4, W: 4, X: 8,
   Y: 4, Z: 10
 };
-// const letterList = () => {
-//   let list = [];
-//   for (let [letter, count] of Object.entries(LETTER_POOL)) {
-//     for (let i = 0; i < count; i++) {
-//       list.push(letter);
-//     }
-//   }
-//   return list;
-// };
-
-// let totalLetters = () => {
-//   let pool = { ...LETTER_POOL };
-//   let totalLetters = 0;
-//   for (let quantity of Object.values(pool)) {
-//     totalLetters += quantity;
-//   }
-//   return totalLetters;
-// };
-
 
 export const drawLetters = () => {
-  let userList = [];
-  let pool = { ...LETTER_POOL };
+  const userList = [];
+  const pool = { ...LETTER_POOL };
 
   while (userList.length < 10) {
     // recalculate total letters each iteration
-    let totalLetters = Object.values(pool).reduce((sum, quantity) => sum + quantity, 0);
+    const totalLetters = Object.values(pool).reduce((sum, quantity) => sum + quantity, 0);
 
     // get random position by total letters
-    let randomPosition = Math.floor(Math.random() * totalLetters ) + 1;
+    const randomPosition = Math.floor(Math.random() * totalLetters ) + 1;
     let positionCounter = 0;
 
-    for (let [letter, quantity] of Object.entries(pool)) {
+    for (const [letter, quantity] of Object.entries(pool)) {
       // positionCounter moves forward by quantity of current letter
+      // in order to eventually get to where randomPosition is
       positionCounter += quantity;
 
       // check if randomPosition is within current letter's range
       if (positionCounter < randomPosition) {
         continue; // we haven't found our letter yet so continue the for loop to next letter
       } else {
-        // if randomPosition is less than positionCounter, we found our letter
+        // we found our letter when positionCounter is equal or larger than randomPosition
         userList.push(letter);
         pool[letter] -= 1;
         break; // exit the for loop
@@ -72,7 +54,7 @@ export const drawLetters = () => {
 export const usesAvailableLetters = (input, lettersInHand) => {
   const lettersDict = {};
 
-  for (let letter of lettersInHand) {
+  for (const letter of lettersInHand) {
     const lowerCaseLetter = letter.toLowerCase();
     lettersDict[lowerCaseLetter] = (lettersDict[lowerCaseLetter] || 0) + 1;
   }
@@ -105,5 +87,37 @@ export const scoreWord = (word) => {
 };
 
 export const highestScoreFrom = (words) => {
-  // Implement this method for wave 4
+  let highestScore = 0;
+  let highestWord = '';
+  let highestLength = 0;
+
+  for (const word of words) {
+    const score = scoreWord(word);
+    const wordLength = word.length;
+
+    if (score > highestScore){
+      highestScore = score;
+      highestWord = word;
+      highestLength = wordLength;
+    } else if (score === highestScore) {
+      // tie-breaking rules:
+      // 1. if new word is 10 letters and current isn't, take new word
+      if (wordLength === 10 && highestLength !== 10) {
+        highestWord = word;
+        highestLength = wordLength;
+      }
+      // 2. if current word is 10 letters, keep it (don't replace)
+      else if (highestLength === 10) {
+        continue; // continue to the next loop until the last word of the list
+      }
+      // 3. neither is 10 letters, pick shorter word
+      else if (wordLength < highestLength) {
+        highestWord = word;
+        highestLength = wordLength;
+      }
+      // 4. same length or new word is longer, keep current (first one wins)
+    }
+  }
+
+  return {word: highestWord, score: highestScore};
 };
