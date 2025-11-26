@@ -18,33 +18,38 @@ const SCORE_DICT = {
   Y: 4, Z: 10
 };
 
+const getTotalLetters = (pool) => {
+  return Object.values(pool).reduce((sum, quantity) => sum + quantity, 0);
+};
+
+const drawSingleLetter = (pool) => {
+  const totalLetters = getTotalLetters(pool);
+  const randomPosition = Math.floor(Math.random() * totalLetters ) + 1;
+  let positionCounter = 0;
+
+  for (const [letter, quantity] of Object.entries(pool)) {
+    // positionCounter moves forward by quantity of current letter
+    // in order to eventually get to where randomPosition is
+    positionCounter += quantity;
+
+    // check if randomPosition is within current letter's range
+    if (positionCounter < randomPosition) {
+      continue; // we haven't found our letter yet so continue the for loop to next letter
+    } else {
+      // we found our letter when positionCounter is equal or larger than randomPosition
+      pool[letter] -= 1;
+      return letter;
+    }
+  }
+};
+
 export const drawLetters = () => {
   const userList = [];
   const pool = { ...LETTER_POOL };
 
   while (userList.length < 10) {
-    // recalculate total letters each iteration
-    const totalLetters = Object.values(pool).reduce((sum, quantity) => sum + quantity, 0);
-
-    // get random position by total letters
-    const randomPosition = Math.floor(Math.random() * totalLetters ) + 1;
-    let positionCounter = 0;
-
-    for (const [letter, quantity] of Object.entries(pool)) {
-      // positionCounter moves forward by quantity of current letter
-      // in order to eventually get to where randomPosition is
-      positionCounter += quantity;
-
-      // check if randomPosition is within current letter's range
-      if (positionCounter < randomPosition) {
-        continue; // we haven't found our letter yet so continue the for loop to next letter
-      } else {
-        // we found our letter when positionCounter is equal or larger than randomPosition
-        userList.push(letter);
-        pool[letter] -= 1;
-        break; // exit the for loop
-      }
-    }
+    const letter = drawSingleLetter(pool);
+    userList.push(letter);
   }
 
   return userList;
