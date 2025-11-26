@@ -91,6 +91,22 @@ export const scoreWord = (word) => {
   return score;
 };
 
+const handleTiedScore = (newWord, newLength, currentWord, currentLength) => {
+  // Tie-breaking logic:
+  // 1. if new word is 10 letters and current isn't, take new word
+  if (newLength === 10 && currentLength !== 10) {
+    return {word: newWord, length: newLength};
+  } else if (currentLength === 10) {
+  // 2. if current word is 10 letters, keep it (don't replace)
+    return {word: currentWord, length: currentLength};
+  } else if (newLength < currentLength) {
+  // 3. neither is 10 letters, pick shorter word
+    return {word: newWord, length: newLength};
+  }
+  // 4. same length or new word is longer, keep current (first one wins)
+  return {word: currentWord, length: currentLength};
+};
+
 export const highestScoreFrom = (words) => {
   let highestScore = 0;
   let highestWord = '';
@@ -100,27 +116,14 @@ export const highestScoreFrom = (words) => {
     const score = scoreWord(word);
     const wordLength = word.length;
 
-    if (score > highestScore){
+    if (score > highestScore) {
       highestScore = score;
       highestWord = word;
       highestLength = wordLength;
     } else if (score === highestScore) {
-      // tie-breaking rules:
-      // 1. if new word is 10 letters and current isn't, take new word
-      if (wordLength === 10 && highestLength !== 10) {
-        highestWord = word;
-        highestLength = wordLength;
-      }
-      // 2. if current word is 10 letters, keep it (don't replace)
-      else if (highestLength === 10) {
-        continue; // continue to the next loop until the last word of the list
-      }
-      // 3. neither is 10 letters, pick shorter word
-      else if (wordLength < highestLength) {
-        highestWord = word;
-        highestLength = wordLength;
-      }
-      // 4. same length or new word is longer, keep current (first one wins)
+      const result = handleTiedScore(word, wordLength, highestWord, highestLength);
+      highestWord = result.word;
+      highestLength = result.length;
     }
   }
 
